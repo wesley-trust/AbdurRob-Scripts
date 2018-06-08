@@ -42,7 +42,7 @@ function Get-UsersInGroup
 
     # Output the users onto the screen, formatted into a table
 
-    $Members | Format-Table | Out-Host
+    $Members | Format-Table | Write-Host
 
     }
 
