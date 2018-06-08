@@ -1,4 +1,8 @@
-﻿<#
+<#
+#Script name: Get all users form a group
+#Creator: Abdur Rob
+#Date: 2018-06-08
+#Revision: 1
 .Synopsis
    Script which retrieves the all the users within an AD Goup.
 .DESCRIPTION
@@ -12,7 +16,7 @@ function Get-UsersInGroup
    [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$False,
-                    HelpMessage="Enter the Group name and location")]
+                    HelpMessage="Computer name or IP address")]
         [string[] ] $Group,
                     $Location
 )
@@ -32,7 +36,13 @@ function Get-UsersInGroup
 
         $Members = Get-ADGroupMember -Identity "acumension" | Get-ADUser | select givenname, surname, userprincipalname
 
+    # Export the users into a CSV file
+
       $Members | Export-Csv -Path $Location -NoTypeInformation
+
+    # Output the users onto the screen, formatted into a table
+
+    $Members | Format-Table | Out-Host
 
     }
 
