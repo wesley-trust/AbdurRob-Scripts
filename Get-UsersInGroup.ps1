@@ -12,7 +12,7 @@ function Get-UsersInGroup
    [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$False,
-                    HelpMessage="Computer name or IP address")]
+                    HelpMessage="Enter the Group name and location")]
         [string[] ] $Group,
                     $Location
 )
