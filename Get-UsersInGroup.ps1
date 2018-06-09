@@ -1,8 +1,11 @@
 <#
-#Script name: Get all users from a group
+#Script name: Get users within an AD group
 #Creator: Abdur Rob
 #Date: 2018-06-08
-#Revision: 1
+#Revision: Wesley Trust
+#Date: 2018-06-09
+#Version: 2
+
 .Synopsis
    Script which retrieves all the users within an AD Group.
 .DESCRIPTION
