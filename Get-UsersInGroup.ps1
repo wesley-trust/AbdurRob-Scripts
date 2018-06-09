@@ -19,7 +19,10 @@ function Get-UsersInGroup {
     Param(
         [Parameter(
             Mandatory = $False,
-            HelpMessage = "Enter group display name"
+            HelpMessage = "Enter group display name",
+            Position = 0,
+            ValueFromPipeLine = $true,
+            ValueFromPipeLineByPropertyName = $true
         )]
         [string[]]
         $GroupDisplayName,
@@ -27,18 +30,18 @@ function Get-UsersInGroup {
             Mandatory = $False,
             HelpMessage = "Enter CSV export path"
         )]
-        [string[]]
+        [string]
         $CSVExportPath
     )
             
     Begin {
         try {
-            # Prompt for input
+            # Prompt for user friendly input
             if (!$GroupDisplayName) {
-                $GroupDisplayName = Read-Host -Prompt "Enter the group name"
+                $GroupDisplayName = Read-Host -Prompt "Enter the group display name"
             }
             if (!$CSVExportPath) {
-                $CSVExportPath = Read-Host -Prompt "Enter the output location for the CSV"
+                $CSVExportPath = Read-Host -Prompt "Enter the output location for the CSV export"
             }
         }
         catch {
@@ -56,6 +59,7 @@ function Get-UsersInGroup {
 
             # Foreach group
             $ADUsers = foreach ($DisplayName in $GroupDisplayName) {
+                
                 # Get the members of the group
                 $Members = Get-ADGroupMember -Identity $GroupDisplayName
 
@@ -63,10 +67,18 @@ function Get-UsersInGroup {
                 $Members | Get-ADUser | Select-Object givenname, surname, userprincipalname
             }
 
-            # Export the users into a CSV file
-            $ADUsers | Export-Csv -Path $CSVExportPath -NoTypeInformation
+            # If there are users
+            if ($ADUsers) {
+                
+                # Export the users into a CSV file
+                $ADUsers | Export-Csv -Path $CSVExportPath -NoTypeInformation
 
-            return $ADUsers
+                return $ADUsers
+            }
+            else {
+                $WarningMessage = "No member users within the groups specified"
+                Write-Warning $WarningMessage
+            }
         }
         catch {
             Write-Error -Message $_.Exception
