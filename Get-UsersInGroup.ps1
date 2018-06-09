@@ -1,54 +1,86 @@
 <#
-#Script name: Get all users form a group
+#Script name: Get all users from a group
 #Creator: Abdur Rob
 #Date: 2018-06-08
 #Revision: 1
 .Synopsis
-   Script which retrieves the all the users within an AD Goup.
+   Script which retrieves all the users within an AD Group.
 .DESCRIPTION
-   Script which will use PowerShell to retrieve all members from a specified goup and export this to a CSV.
+   Script which will use PowerShell to retrieve all members from a specified goup and export this to a CSV and format on screen.
 .EXAMPLE
-   Get-UsersInGroup -GroupName
+   Get-UsersInGroup -GroupDisplayName $GroupDisplayName -CSVExportPath $CSVExportPath
 #>
 
-function Get-UsersInGroup
-{
-   [CmdletBinding()]
+function Get-UsersInGroup {
+    [CmdletBinding()]
     Param(
-        [Parameter(Mandatory=$False,
-                    HelpMessage="Computer name or IP address")]
-        [string[] ] $Group,
-                    $Location
-)
+        [Parameter(
+            Mandatory = $False,
+            HelpMessage = "Enter group display name"
+        )]
+        [string[]]
+        $GroupDisplayName,
+        [Parameter(
+            Mandatory = $False,
+            HelpMessage = "Enter CSV export path"
+        )]
+        [string[]]
+        $CSVExportPath
+    )
             
-    Begin
-    {
+    Begin {
+        try {
+            # Prompt for input
+            if (!$GroupDisplayName) {
+                $GroupDisplayName = Read-Host -Prompt "Enter the group name"
+            }
+            if (!$CSVExportPath) {
+                $CSVExportPath = Read-Host -Prompt "Enter the output location for the CSV"
+            }
+        }
+        catch {
+            Write-Error -Message $_.Exception
 
-    $Group = Read-Host -Prompt "Enter the group name"
-
-        $Location = Read-Host -Prompt "Enter the output location for the CSV"
-
+        }
     }
 
     Process {
+        try {
+        
+            # Split and trim input
+            $GroupDisplayName = $GroupDisplayName.Split(",")
+            $GroupDisplayName = $GroupDisplayName.Trim()
 
-    # Get the users from the group
+            # Foreach group
+            $ADUsers = foreach ($DisplayName in $GroupDisplayName) {
+                # Get the members of the group
+                $Members = Get-ADGroupMember -Identity $GroupDisplayName
 
-        $Members = Get-ADGroupMember -Identity "acumension" | Get-ADUser | select givenname, surname, userprincipalname
+                # Get the user objects, and select properties
+                $Members | Get-ADUser | Select-Object givenname, surname, userprincipalname
+            }
 
-    # Export the users into a CSV file
+            # Export the users into a CSV file
+            $ADUsers | Export-Csv -Path $CSVExportPath -NoTypeInformation
 
-      $Members | Export-Csv -Path $Location -NoTypeInformation
+            return $ADUsers
+        }
+        catch {
+            Write-Error -Message $_.Exception
 
-    # Output the users onto the screen, formatted into a table
-
-    $Members | Format-Table | Out-Host
-
+        }
     }
 
-    End
-    {
+    End {
+        try {
+        
+        }
+        catch {
+            Write-Error -Message $_.Exception
+
+        }
     }
 }
 
-Get-UsersInGroup
+# Call function, with variables if present, and format output
+Get-UsersInGroup -GroupDisplayName $GroupDisplayName -CSVExportPath $CSVExportPath | Format-Table
